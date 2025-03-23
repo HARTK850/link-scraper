@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מוריד דפים אוטומטי</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #E0F7FA; text-align: center; }
+        #input { width: 80%; height: 150px; }
+        button { background-color: blue; color: white; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>מוריד דפים אוטומטי</h1>
+    <textarea id="input" placeholder="הכנס קישורים כאן (כל קישור בשורה נפרדת)"></textarea><br>
+    <select id="format">
+        <option value="pdf">PDF</option>
+        <option value="html">HTML</option>
+    </select>
+    <button onclick="submitLinks()">הורדה</button>
+    <p id="status"></p>
+
+    <script>
+        function submitLinks() {
+            let links = document.getElementById('input').value.split("\n").filter(link => link.trim() !== "");
+            let format = document.getElementById('format').value;
+            
+            fetch('/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ links, format })
+            }).then(response => response.blob())
+            .then(blob => {
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = "downloaded_pages.zip";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }).catch(err => {
+                document.getElementById('status').innerText = "שגיאה בהורדה!";
+            });
+        }
+    </script>
+</body>
+</html>
