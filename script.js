@@ -9,14 +9,16 @@ async function downloadPages() {
         const url = links[i].trim();
         if (url) {
             try {
-                const response = await fetch(`https://api.pdfcrowd.com/convert/uri/?url=${encodeURIComponent(url)}`);
-                const blob = await response.blob();
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `page_${i + 1}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                const response = await fetch(url);
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+
+                const content = doc.documentElement.innerHTML;
+                const tempElement = document.createElement('div');
+                tempElement.innerHTML = content;
+
+                html2pdf().from(tempElement).save(`page_${i + 1}.pdf`);
             } catch (error) {
                 console.error("שגיאה בהורדת הדף:", error);
             }
