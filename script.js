@@ -9,16 +9,20 @@ async function downloadPages() {
         const url = links[i].trim();
         if (url) {
             try {
-                const response = await fetch(url);
-                const text = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
+                // יצירת iframe
+                const iframe = document.createElement('iframe');
+                iframe.style.position = 'absolute';
+                iframe.style.left = '-9999px';
+                document.body.appendChild(iframe);
 
-                const content = doc.documentElement.innerHTML;
-                const tempElement = document.createElement('div');
-                tempElement.innerHTML = content;
+                iframe.onload = function () {
+                    setTimeout(() => {
+                        html2pdf().from(iframe.contentDocument.body).save(`page_${i + 1}.pdf`);
+                        document.body.removeChild(iframe);
+                    }, 3000); // זמן טעינה נוסף למניעת בעיות טעינה
+                };
 
-                html2pdf().from(tempElement).save(`page_${i + 1}.pdf`);
+                iframe.src = url; // טוען את הדף בתוך iframe
             } catch (error) {
                 console.error("שגיאה בהורדת הדף:", error);
             }
